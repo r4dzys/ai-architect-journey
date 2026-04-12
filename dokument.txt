@@ -1,0 +1,19 @@
+AI Architect is a specialist who designs artificial intelligence systems.
+They are responsible for model selection, infrastructure, and integration with enterprise systems.
+They must understand both business and technology.
+
+RAG (Retrieval Augmented Generation) is a technique that connects LLMs with custom documents.
+It allows the model to answer questions based on specific company data.
+It is widely used in enterprise for building chatbots and assistants.
+
+Embeddings are a representation of text as vectors of numbers.
+Texts with similar meaning have similar vectors.
+This allows us to search documents based on meaning rather than keywords.
+
+Vector store is a database optimized for storing and searching embeddings.
+Popular vector stores include ChromaDB, Pinecone, and Azure AI Search.
+They enable fast similarity search across thousands of documents.
+
+Chunking is the process of splitting large documents into smaller pieces.
+This is necessary because LLMs have a context window limit.
+Proper chunk size and overlap are critical for RAG quality.
