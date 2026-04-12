@@ -1,0 +1,2 @@
+imie = input("Jak masz na imię? ")
+print(f"Cześć {imie}, witaj na ścieżce AI Architekta!")
