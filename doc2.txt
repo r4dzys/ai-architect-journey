@@ -1,0 +1,5 @@
+LangChain is a framework for building applications with large language models.
+It provides tools for document loading, text splitting, and vector stores.
+LangChain supports multiple LLM providers including OpenAI, Anthropic, and Ollama.
+Chains allow you to combine multiple components into a single pipeline.
+Agents can use tools and make decisions to complete complex tasks.

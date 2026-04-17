@@ -1,0 +1,5 @@
+A Business Analyst in AI projects bridges business needs and technical solutions.
+They gather requirements, define success metrics, and validate AI outputs.
+Key skills include prompt engineering, data literacy, and stakeholder communication.
+AI Business Analysts work closely with data scientists and ML engineers.
+Understanding of RAG, embeddings, and LLM limitations is increasingly required.

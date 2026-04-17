@@ -1,0 +1,5 @@
+Azure is Microsoft's cloud computing platform.
+It provides a wide range of services including AI, machine learning, and data analytics.
+Azure OpenAI Service gives access to GPT models through REST APIs.
+Azure AI Search is a cloud search service with built-in AI capabilities.
+It supports vector search, semantic ranking, and hybrid search.
