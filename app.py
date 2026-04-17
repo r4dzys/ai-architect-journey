@@ -6,7 +6,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 
-client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 
 def zaladuj_i_podziel(folder="."):
