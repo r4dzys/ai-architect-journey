@@ -1,0 +1,3 @@
+Vector store is a database optimized for storing and searching embeddings.
+Popular vector stores include ChromaDB, Pinecone, and Azure AI Search.
+They enable fast similarity search across thousands of documents.

@@ -1,0 +1,3 @@
+Embeddings are a representation of text as vectors of numbers.
+Texts with similar meaning have similar vectors.
+This allows us to search documents based on meaning rather than keywords.

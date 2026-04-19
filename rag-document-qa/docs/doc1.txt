@@ -1,0 +1,3 @@
+AI Architect is a specialist who designs artificial intelligence systems.
+They are responsible for model selection, infrastructure, and integration with enterprise systems.
+They must understand both business and technology.
