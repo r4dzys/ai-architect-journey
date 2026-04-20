@@ -1,23 +1,30 @@
 import os
+import tempfile
 from groq import Groq
 import streamlit as st
-from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-BASE_DIR = "/app"
-DOCS_DIR = "/app/docs"
 
-def zaladuj_i_podziel():
-    dokumenty = []
-    for plik in os.listdir(DOCS_DIR):
-        if plik.endswith(".txt"):
-            loader = TextLoader(os.path.join(DOCS_DIR, plik))
-            dokumenty.extend(loader.load())
-    splitter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=50)
+def zaladuj_dokument(sciezka, rozszerzenie):
+    if rozszerzenie == ".pdf":
+        loader = PyPDFLoader(sciezka)
+    elif rozszerzenie == ".txt":
+        loader = TextLoader(sciezka)
+    elif rozszerzenie == ".docx":
+        loader = Docx2txtLoader(sciezka)
+    return loader.load()
+
+
+def podziel_na_chunki(dokumenty, chunk_size=500, chunk_overlap=50):
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap
+    )
     return splitter.split_documents(dokumenty)
 
 
@@ -51,21 +58,45 @@ Question: {zapytanie}
 
 # Streamlit UI
 st.title("RAG Document Q&A")
-st.write("Ask questions based on loaded documents.")
+st.write("Upload your documents and ask questions.")
 
-if "vector_store" not in st.session_state:
-    with st.spinner("Loading documents and creating vector store..."):
-        chunki = zaladuj_i_podziel()
-        st.session_state.vector_store = stworz_vector_store(chunki)
-    st.success(f"Ready! Loaded from: {DOCS_DIR}")
+uploaded_files = st.file_uploader(
+    "Upload documents (PDF, TXT, DOCX)",
+    type=["pdf", "txt", "docx"],
+    accept_multiple_files=True
+)
 
-zapytanie = st.text_input("Your question:")
+if uploaded_files:
+    if "vector_store" not in st.session_state or st.session_state.get("loaded_files") != [f.name for f in uploaded_files]:
+        with st.spinner("Processing documents..."):
+            wszystkie_dokumenty = []
 
-if zapytanie:
-    with st.spinner("Searching..."):
-        kontekst = wyszukaj_kontekst(st.session_state.vector_store, zapytanie)
-        odpowiedz = zapytaj_llm(kontekst, zapytanie)
-    st.write("**Answer:**")
-    st.write(odpowiedz)
-    with st.expander("Context used"):
-        st.write(kontekst)
+            for uploaded_file in uploaded_files:
+                rozszerzenie = os.path.splitext(uploaded_file.name)[1].lower()
+
+                with tempfile.NamedTemporaryFile(delete=False, suffix=rozszerzenie) as tmp:
+                    tmp.write(uploaded_file.read())
+                    tmp_path = tmp.name
+
+                dokumenty = zaladuj_dokument(tmp_path, rozszerzenie)
+                wszystkie_dokumenty.extend(dokumenty)
+                os.unlink(tmp_path)
+
+            chunki = podziel_na_chunki(wszystkie_dokumenty)
+            st.session_state.vector_store = stworz_vector_store(chunki)
+            st.session_state.loaded_files = [f.name for f in uploaded_files]
+
+        st.success(f"Ready! Loaded {len(uploaded_files)} documents, {len(chunki)} chunks.")
+
+    zapytanie = st.text_input("Your question:")
+
+    if zapytanie:
+        with st.spinner("Searching..."):
+            kontekst = wyszukaj_kontekst(st.session_state.vector_store, zapytanie)
+            odpowiedz = zapytaj_llm(kontekst, zapytanie)
+        st.write("**Answer:**")
+        st.write(odpowiedz)
+        with st.expander("Context used"):
+            st.write(kontekst)
+else:
+    st.info("Please upload at least one document to start.")
