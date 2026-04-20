@@ -40,18 +40,20 @@ def wyszukaj_kontekst(vector_store, zapytanie, k=3):
     return "\n".join([w.page_content for w in wyniki])
 
 
-def zapytaj_llm(kontekst, zapytanie):
-    prompt = f"""Answer the question based only on the context below.
+def zapytaj_llm(kontekst, zapytanie, historia):
+    system_prompt = f"""You are a helpful assistant that answers questions based only on the provided context.
 If the answer is not in the context, say "I don't know".
 
 Context:
 {kontekst}
-
-Question: {zapytanie}
 """
+    wiadomosci = [{"role": "system", "content": system_prompt}]
+    wiadomosci.extend(historia)
+    wiadomosci.append({"role": "user", "content": zapytanie})
+
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": prompt}]
+        messages=wiadomosci
     )
     return response.choices[0].message.content
 
@@ -85,18 +87,34 @@ if uploaded_files:
             chunki = podziel_na_chunki(wszystkie_dokumenty)
             st.session_state.vector_store = stworz_vector_store(chunki)
             st.session_state.loaded_files = [f.name for f in uploaded_files]
+            st.session_state.historia = []
 
         st.success(f"Ready! Loaded {len(uploaded_files)} documents, {len(chunki)} chunks.")
 
-    zapytanie = st.text_input("Your question:")
+    # Wyświetl historię konwersacji
+    for wiadomosc in st.session_state.get("historia", []):
+        if wiadomosc["role"] == "user":
+            st.chat_message("user").write(wiadomosc["content"])
+        else:
+            st.chat_message("assistant").write(wiadomosc["content"])
+
+    # Input użytkownika
+    zapytanie = st.chat_input("Your question:")
 
     if zapytanie:
+        st.chat_message("user").write(zapytanie)
+
         with st.spinner("Searching..."):
             kontekst = wyszukaj_kontekst(st.session_state.vector_store, zapytanie)
-            odpowiedz = zapytaj_llm(kontekst, zapytanie)
-        st.write("**Answer:**")
-        st.write(odpowiedz)
+            odpowiedz = zapytaj_llm(kontekst, zapytanie, st.session_state.historia)
+
+        st.chat_message("assistant").write(odpowiedz)
+
         with st.expander("Context used"):
             st.write(kontekst)
+
+        st.session_state.historia.append({"role": "user", "content": zapytanie})
+        st.session_state.historia.append({"role": "assistant", "content": odpowiedz})
+
 else:
     st.info("Please upload at least one document to start.")
