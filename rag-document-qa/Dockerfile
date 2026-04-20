@@ -13,6 +13,7 @@ COPY src/ ./src/
 COPY docs/ ./docs/
 
 RUN pip3 install -r requirements.txt
+RUN mkdir -p /tmp/uploads && chmod 777 /tmp/uploads
 
 EXPOSE 8501
 
