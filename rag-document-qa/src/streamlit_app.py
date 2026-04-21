@@ -62,10 +62,21 @@ Context:
 st.title("RAG Document Q&A")
 st.write("Upload your documents and ask questions.")
 
+if "uploader_key" not in st.session_state:
+    st.session_state.uploader_key = 0
+
+if st.button("🔄 New Conversation"):
+    st.session_state.historia = []
+    st.session_state.vector_store = None
+    st.session_state.loaded_files = []
+    st.session_state.uploader_key += 1
+    st.rerun()
+
 uploaded_files = st.file_uploader(
     "Upload documents (PDF, TXT, DOCX)",
     type=["pdf", "txt", "docx"],
-    accept_multiple_files=True
+    accept_multiple_files=True,
+    key=f"uploader_{st.session_state.uploader_key}"
 )
 
 if uploaded_files:
